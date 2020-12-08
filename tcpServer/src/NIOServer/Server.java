@@ -118,7 +118,8 @@ public class Server implements Runnable {
 			System.arraycopy(buffer.array(), 0, data, 0, size);
 		
 			ST_Header st_header = new ST_Header();
-			st_header.setDataLen(data);
+			st_header.setStHeader(data);
+			
 			
 			/************
 			byte[] d_DataLen = new byte[4];
@@ -232,9 +233,7 @@ class ST_Header {
     public int Next_KeyLen;
     public int Option_len;
 
-    private int byte2Int(int iStrt, ByteBuffer data) {
-        byte[] bt = new byte[4];
-        System.arraycopy(data.array(), iStrt, bt, 0, 4);
+    private int byte2Int(byte[] bt) {
         int s1 = bt[0] & 0xFF;
         int s2 = bt[1] & 0xFF;
         int s3 = bt[2] & 0xFF;
@@ -250,14 +249,4 @@ class ST_Header {
 		System.arraycopy(btData, 0, t4Byte, 4, 4);
 		this.TrCode = byte2Int(t4Byte);
 	}
-
-    public void setDataLen(ByteBuffer data) {
-        this.DataLen = byte2Int(0, data);
-    }
-    public void setTrCode(ByteBuffer data) {
-    	this.TrCode = byte2Int(4, data);
-    }
-    public void setDest_Way(ByteBuffer data) {
-    	this.Dest_Way = byte2Int(8, data);
-    }
 }
