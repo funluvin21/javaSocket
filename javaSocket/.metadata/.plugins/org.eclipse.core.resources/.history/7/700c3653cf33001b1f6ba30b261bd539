@@ -1,0 +1,10 @@
+package tcpServer;
+
+public class tcpServer {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+
+}
