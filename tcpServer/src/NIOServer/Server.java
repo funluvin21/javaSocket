@@ -116,12 +116,9 @@ public class Server implements Runnable {
 			// ByteBuffer -> byte[]
 			byte[] data = new byte[size];
 			System.arraycopy(buffer.array(), 0, data, 0, size);
-			
-			//ST_Header st_header = new ST_Header();
-			//st_header.setDataLen(data);
-			
-					
-			
+		
+			ST_Header st_header = new ST_Header();
+			st_header.setDataLen(data);
 			
 			/************
 			byte[] d_DataLen = new byte[4];
@@ -201,7 +198,7 @@ public class Server implements Runnable {
 	    Executors.newSingleThreadExecutor().execute(new Server("localhost", 7777));
 	}
 	
-	public int byte2Int(byte[] bt) {
+	public int byte2Int_test(byte[] bt) {
 		int s1 = bt[0] & 0xFF;
 		int s2 = bt[1] & 0xFF;
 		int s3 = bt[2] & 0xFF;
@@ -214,6 +211,7 @@ public class Server implements Runnable {
 
 //Header
 class ST_Header {
+	public int HeaderSz;
     public int DataLen;
     public int TrCode;
     public int Dest_Way;
@@ -243,6 +241,15 @@ class ST_Header {
         int s4 = bt[3] & 0xFF;
         return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
     }
+
+	public void setStHeader(byte[] btData) {
+		this.HeaderSz = (4 * 11) + (1 * 4) + 12;
+        byte[] t4Byte = new byte[4];
+		System.arraycopy(btData, 0, t4Byte, 0, 4);
+		this.DataLen = byte2Int(t4Byte);
+		System.arraycopy(btData, 0, t4Byte, 4, 4);
+		this.TrCode = byte2Int(t4Byte);
+	}
 
     public void setDataLen(ByteBuffer data) {
         this.DataLen = byte2Int(0, data);
