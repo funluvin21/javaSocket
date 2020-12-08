@@ -124,12 +124,10 @@ public class Server implements Runnable {
 			// StringBuffer 취득
 			StringBuffer sb = (StringBuffer) key.attachment();
 
-			int iStrLen = st_header.DataLen - (st_header.HeaderSz - 4);
-			int iPos = st_header.HeaderSz;
-			byte[] bStrData = new byte[iStrLen];
-			System.arraycopy(buffer.array(), iPos, bStrData, 0, iStrLen);
+			byte[] strData = new byte[st_header.DataLen - (st_header.HeaderSz - 4)];
+			
 			// 버퍼에 수신된 데이터 추가
-			sb.append(new String(bStrData));
+			sb.append(new String(strData));
 			// 데이터 끝이 개행 일 경우.
 			if (sb.length() > 2 && sb.charAt(sb.length() - 2) == CR && sb.charAt(sb.length() - 1) == LF) {
 				// 개행 삭제

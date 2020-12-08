@@ -117,19 +117,30 @@ public class Server implements Runnable {
 			byte[] data = new byte[size];
 			System.arraycopy(buffer.array(), 0, data, 0, size);
 		
-			//헤더 및 tr 확인
 			ST_Header st_header = new ST_Header();
 			st_header.setStHeader(data);
 			
+			
+			/************
+			byte[] d_DataLen = new byte[4];
+			System.arraycopy(buffer.array(), 0, d_DataLen, 0, 4);
+			int dataLen = byte2Int(d_DataLen);
+			System.out.println(dataLen);
+			
+			byte[] d_TrCode = new byte[4];
+			System.arraycopy(buffer.array(), 4, d_TrCode, 0, 4);
+			int trCode = byte2Int(d_TrCode);
+			System.out.println(trCode);
+			
+			*********************/
+			
+			
+			
+			
 			// StringBuffer 취득
 			StringBuffer sb = (StringBuffer) key.attachment();
-
-			int iStrLen = st_header.DataLen - (st_header.HeaderSz - 4);
-			int iPos = st_header.HeaderSz;
-			byte[] bStrData = new byte[iStrLen];
-			System.arraycopy(buffer.array(), iPos, bStrData, 0, iStrLen);
 			// 버퍼에 수신된 데이터 추가
-			sb.append(new String(bStrData));
+			sb.append(new String(data));
 			// 데이터 끝이 개행 일 경우.
 			if (sb.length() > 2 && sb.charAt(sb.length() - 2) == CR && sb.charAt(sb.length() - 1) == LF) {
 				// 개행 삭제
@@ -158,19 +169,6 @@ public class Server implements Runnable {
 		}
 	}
 
-	/************
-	byte[] d_DataLen = new byte[4];
-	System.arraycopy(buffer.array(), 0, d_DataLen, 0, 4);
-	int dataLen = byte2Int(d_DataLen);
-	System.out.println(dataLen);
-	
-	byte[] d_TrCode = new byte[4];
-	System.arraycopy(buffer.array(), 4, d_TrCode, 0, 4);
-	int trCode = byte2Int(d_TrCode);
-	System.out.println(trCode);
-	
-	*********************/
-	
 	// 발신시 호출 함수
 	private void send(Selector selector, SelectionKey key) {
 		try {

@@ -11050,3 +11050,35 @@ java.lang.NullPointerException
 	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:594)
 	at org.eclipse.equinox.launcher.Main.run(Main.java:1465)
 	at org.eclipse.equinox.launcher.Main.main(Main.java:1438)
+!SESSION 2020-12-08 22:30:00.521 -----------------------------------------------
+eclipse.buildId=4.14.0.I20191210-0610
+java.version=11.0.9
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=ko_KR
+Framework arguments:  -product org.eclipse.epp.package.jee.product
+Command-line arguments:  -os linux -ws gtk -arch x86_64 -product org.eclipse.epp.package.jee.product
+
+!ENTRY org.eclipse.jdt.debug 4 5010 2020-12-08 22:36:26.372
+!MESSAGE com.sun.jdi.InternalException: Got error code in reply:35 occurred while retrieving value.
+!STACK 0
+com.sun.jdi.InternalException: Got error code in reply:35
+	at org.eclipse.jdi.internal.MirrorImpl.defaultReplyErrorHandler(MirrorImpl.java:302)
+	at org.eclipse.jdi.internal.StackFrameImpl.getValues(StackFrameImpl.java:142)
+	at org.eclipse.jdi.internal.StackFrameImpl.getValue(StackFrameImpl.java:78)
+	at org.eclipse.jdt.internal.debug.core.model.JDILocalVariable.retrieveValue(JDILocalVariable.java:60)
+	at org.eclipse.jdt.internal.debug.core.model.JDIVariable.getCurrentValue(JDIVariable.java:75)
+	at org.eclipse.jdt.internal.debug.core.model.JDIVariable.getValue(JDIVariable.java:99)
+	at org.eclipse.jdt.internal.debug.ui.JDIModelPresentation.computeLogicalStructureAdornmentFlags(JDIModelPresentation.java:1170)
+	at org.eclipse.jdt.internal.debug.ui.JDIModelPresentation.getVariableImage(JDIModelPresentation.java:945)
+	at org.eclipse.jdt.internal.debug.ui.JDIModelPresentation.getImage(JDIModelPresentation.java:713)
+	at org.eclipse.debug.internal.ui.LazyModelPresentation.getImage(LazyModelPresentation.java:129)
+	at org.eclipse.debug.internal.ui.DelegatingModelPresentation.getImage(DelegatingModelPresentation.java:138)
+	at org.eclipse.debug.internal.ui.views.launch.DebugElementHelper.getImageDescriptor(DebugElementHelper.java:61)
+	at org.eclipse.debug.internal.ui.model.elements.DebugElementLabelProvider.getImageDescriptor(DebugElementLabelProvider.java:82)
+	at org.eclipse.debug.internal.ui.model.elements.VariableLabelProvider.getImageDescriptor(VariableLabelProvider.java:67)
+	at org.eclipse.debug.internal.ui.model.elements.ElementLabelProvider.getImageDescriptor(ElementLabelProvider.java:274)
+	at org.eclipse.debug.internal.ui.model.elements.ElementLabelProvider.retrieveLabel(ElementLabelProvider.java:201)
+	at org.eclipse.jdt.internal.debug.ui.variables.JavaVariableLabelProvider.retrieveLabel(JavaVariableLabelProvider.java:186)
+	at org.eclipse.debug.internal.ui.model.elements.ElementLabelProvider$LabelUpdater.run(ElementLabelProvider.java:147)
+	at org.eclipse.debug.internal.ui.model.elements.ElementLabelProvider$LabelJob.run(ElementLabelProvider.java:74)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
