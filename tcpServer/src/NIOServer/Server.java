@@ -243,13 +243,13 @@ class ST_Header {
         return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
     }
 
-	public void setStHeader(byte[] btData) {
-		this.HeaderSz = (4 * 11) + (1 * 4) + 12;
+    public void setStHeader(byte[] btData) {
+        this.HeaderSz = (4 * 11) + (1 * 4) + 12;
        
-		byte[] t4Byte = new byte[4];
-		System.arraycopy(btData, 0, t4Byte, 0, 4);
-		this.DataLen = byte2Int(t4Byte);
-		System.arraycopy(btData, 4, t4Byte, 0, 4);
-		this.TrCode = byte2Int(t4Byte);
-	}
+        byte[] t4Byte = new byte[4];
+        System.arraycopy(btData, 0, t4Byte, 0, 4);
+       	this.DataLen = byte2Int(t4Byte);
+        System.arraycopy(btData, 4, t4Byte, 0, 4);
+        this.TrCode = byte2Int(t4Byte);
+    }
 }
