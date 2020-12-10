@@ -13,12 +13,18 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.io.Serializable;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class Server implements Runnable {
     private InetSocketAddress listenAddress;
     // 메시지는 개행으로 구분한다.
     private static char CR = (char) 0x0D;
     private static char LF = (char) 0x0A;
+    private static int stHeaderLen = 60;
+    
     // ip와 port 설정
     public Server(String address, int port) {
         listenAddress = new InetSocketAddress(port);
@@ -91,20 +97,20 @@ public class Server implements Runnable {
     // 수신시 호출 함수..
     private void receive(Selector selector, SelectionKey key) {
         try {
-            // 키 채널을 가져온다.
-            SocketChannel channel = (SocketChannel) key.channel();
-            // 채널 Non-blocking 설정
-            channel.configureBlocking(false);
-            // 소켓 취득
-            Socket socket = channel.socket();
-            // Byte 버퍼 생성
-            ByteBuffer buffer = ByteBuffer.allocate(1024);
-            // ***데이터 수신***
-            int size = channel.read(buffer);
-            
+             // 키 채널을 가져온다.
+           SocketChannel channel = (SocketChannel) key.channel();
+             // 채널 Non-blocking 설정
+           channel.configureBlocking(false);
+             // 소켓 취득
+           Socket socket = channel.socket();
+           // Byte 버퍼 생성
+           ByteBuffer buffer = ByteBuffer.allocate(1024);
+             // ***데이터 수신***
+           int size = channel.read(buffer);
+
             //수신 크기가 없으면 소켓 접속 종료.
-            if (size == -1) {
-				SocketAddress remoteAddr = socket.getRemoteSocketAddress();
+           if (size == -1) {
+			    SocketAddress remoteAddr = socket.getRemoteSocketAddress();
 				System.out.println("Connection closed by client: " + remoteAddr);
 				// 소켓 채널 닫기
 				channel.close();
@@ -118,15 +124,22 @@ public class Server implements Runnable {
             byte[] data = new byte[size];
             System.arraycopy(buffer.array(), 0, data, 0, size);
 
-            //헤더 및 tr 확인
+              //헤더 및 tr 확인
             ST_Header st_header = new ST_Header();
-            st_header.setStHeader(data);
+            //st_header.setStHeader(data);
+            //********st_header = (ST_Header)toObject(data);
+            
+            byte[] t4Byte = new byte[4];
+            System.arraycopy(data, 0, t4Byte, 0, 4);
+            st_header.DataLen = byte2Int(t4Byte);
 
             // StringBuffer 취득
             StringBuffer sb = (StringBuffer) key.attachment();
 
-            int iStrLen = st_header.DataLen - (st_header.HeaderSz - 4);
-            int iPos = st_header.HeaderSz;
+           //private static int stHeaderLen = 60;
+           int iStrLen = st_header.DataLen - (stHeaderLen - 4);
+           int iPos = stHeaderLen;
+
             byte[] bStrData = new byte[iStrLen];
             System.arraycopy(buffer.array(), iPos, bStrData, 0, iStrLen);
             // 버퍼에 수신된 데이터 추가
@@ -175,21 +188,34 @@ System.out.println(trCode);
     // 발신시 호출 함수
     private void send(Selector selector, SelectionKey key) {
         try {
-            // 키 채널을 가져온다.
-            SocketChannel channel = (SocketChannel) key.channel();
-            // 채널 Non-blocking 설정
-            channel.configureBlocking(false);
-            // StringBuffer 취득
-            StringBuffer sb = (StringBuffer) key.attachment();
-            String data = sb.toString();
-            // StringBuffer 초기화
-            sb.setLength(0);
-            //byte 형식으로 변환
-            ByteBuffer buffer = ByteBuffer.wrap(data.getBytes());
+             // 키 채널을 가져온다.
+           SocketChannel channel = (SocketChannel) key.channel();
+             // 채널 Non-blocking 설정
+           channel.configureBlocking(false);
+           // StringBuffer 취득
+           StringBuffer sb = (StringBuffer) key.attachment();
+           String data = sb.toString();
+           // StringBuffer 초기화
+           sb.setLength(0);
+           
+             ////  
+           ST_Header mStHeader = new ST_Header();
+           mStHeader.DataLen = stHeaderLen + data.length();
+           byte[] mByteHeader = toByteArray(mStHeader);
+           byte[] mByteData = data.getBytes();
+           byte[] mByteTotal = new byte[mByteHeader.length + mByteData.length];
+             
+           System.arraycopy(mByteHeader, 0, mByteTotal, 0, mByteHeader.length);
+           System.arraycopy(mByteData, 0, mByteTotal, mByteHeader.length, mByteData.length);
+           
+           
+           //byte 형식으로 변환
+           //ByteBuffer buffer = ByteBuffer.wrap(data.getBytes());
+           ByteBuffer buffer = ByteBuffer.wrap(mByteTotal);
             // ***데이터 송신***
-            channel.write(buffer);
-            // Socket 채널을 channel에 수신 등록한다
-            channel.register(selector, SelectionKey.OP_READ, sb);
+           channel.write(buffer);
+           // Socket 채널을 channel에 수신 등록한다
+           channel.register(selector, SelectionKey.OP_READ, sb);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -201,40 +227,36 @@ System.out.println(trCode);
         // 7777포트를 Listen한다.
         Executors.newSingleThreadExecutor().execute(new Server("localhost", 7777));
     }
-	
-    public int byte2Int_test(byte[] bt) {
-        int s1 = bt[0] & 0xFF;
-        int s2 = bt[1] & 0xFF;
-        int s3 = bt[2] & 0xFF;
-        int s4 = bt[3] & 0xFF;
 
-        return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
+        public static byte[] toByteArray(Object obj) {
+        byte[] bytes = null;
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                try {
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+                        oos.writeObject(obj);
+                        oos.flush();
+                        oos.close();
+                        bos.close();
+                        bytes = bos.toByteArray();
+                } catch (IOException e) {
+            e.printStackTrace();
+                }
+                return bytes;
+        }
+
+    public static Object toObject(byte[] bytes) {
+        Object obj = null;
+        try {
+            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            obj = ois.readObject();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+         }
+        return obj;
     }
-    //출처: https://it77.tistory.com/47 [시원한물냉의 사람사는 이야기]
-}
-
-//Header
-class ST_Header {
-    public int HeaderSz;
-    public int DataLen;
-    public int TrCode;
-    public int Dest_Way;
-    public int Client_Handle;
-    public int User_Field;
-    public int Data_Type;
-    public int Client_Rtn1;
-    public int Client_Rtn2;
-    public int Client_Rtn3;
-    //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-    public String User_ID;//[8];
-    public byte CompressFlg;
-    public byte KillGbn;
-    public byte Filler1;
-    public byte Filler2;
-    //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-    public String Msg_cd;//[4];
-    public int Next_KeyLen;
-    public int Option_len;
 
     private int byte2Int(byte[] bt) {
         int s1 = bt[0] & 0xFF;
@@ -243,14 +265,50 @@ class ST_Header {
         int s4 = bt[3] & 0xFF;
         return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
     }
-
+    
+    /*
     public void setStHeader(byte[] btData) {
-        this.HeaderSz = (4 * 11) + (1 * 4) + 12;
-       
-        byte[] t4Byte = new byte[4];
-        System.arraycopy(btData, 0, t4Byte, 0, 4);
-       	this.DataLen = byte2Int(t4Byte);
-        System.arraycopy(btData, 4, t4Byte, 0, 4);
-        this.TrCode = byte2Int(t4Byte);
+            this.HeaderSz = (4 * 11) + (1 * 4) + 12;
+   
+            byte[] t4Byte = new byte[4];
+            System.arraycopy(btData, 0, t4Byte, 0, 4);
+            this.DataLen = byte2Int(t4Byte);
+            System.arraycopy(btData, 4, t4Byte, 0, 4);
+            this.TrCode = byte2Int(t4Byte);
     }
+
+public int byte2Int_test(byte[] bt) {
+    int s1 = bt[0] & 0xFF;
+    int s2 = bt[1] & 0xFF;
+    int s3 = bt[2] & 0xFF;
+    int s4 = bt[3] & 0xFF;
+
+    return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
+}
+    */
+//출처: https://it77.tistory.com/47 [시원한물냉의 사람사는 이야기]
+}
+
+//Header
+class ST_Header implements Serializable {
+  public int DataLen;
+  public int TrCode;
+  public int Dest_Way;
+  public int Client_Handle;
+  public int User_Field;
+  public int Data_Type;
+  public int Client_Rtn1;
+  public int Client_Rtn2;
+  public int Client_Rtn3;
+  public byte[] User_ID;
+  //public String User_ID;//[8];
+  public byte CompressFlg;
+  public byte KillGbn;
+  public byte Filler1;
+  public byte Filler2;
+  //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+  public byte[] Msg_cd;//[4];
+  //public String Msg_cd;//[4];
+  public int Next_KeyLen;
+  public int Option_len;
 }

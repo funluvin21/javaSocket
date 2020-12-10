@@ -3,4 +3,5 @@
 *.xmi
 *.zip
 *.class
-
+*.log
+*.index
