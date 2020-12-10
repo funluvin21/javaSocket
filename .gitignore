@@ -1,3 +1,5 @@
 *.metadata/
 *.xml
 *.xmi
+*.zip
+
