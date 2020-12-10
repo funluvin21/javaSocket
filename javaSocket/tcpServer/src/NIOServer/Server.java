@@ -13,12 +13,17 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.io.Serializable;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class Server implements Runnable {
     private InetSocketAddress listenAddress;
     // 메시지는 개행으로 구분한다.
     private static char CR = (char) 0x0D;
     private static char LF = (char) 0x0A;
+	private static int stHeaderLen = 60;
     // ip와 port 설정
     public Server(String address, int port) {
         listenAddress = new InetSocketAddress(port);
@@ -120,13 +125,15 @@ public class Server implements Runnable {
 
             //헤더 및 tr 확인
             ST_Header st_header = new ST_Header();
-            st_header.setStHeader(data);
+            //st_header.setStHeader(data);
+            st_header = (ST_Header)toObject(data);
 
             // StringBuffer 취득
             StringBuffer sb = (StringBuffer) key.attachment();
 
-            int iStrLen = st_header.DataLen - (st_header.HeaderSz - 4);
-            int iPos = st_header.HeaderSz;
+	        //private static int stHeaderLen = 60;
+            int iStrLen = st_header.DataLen - (stHeaderLen - 4);
+            int iPos = stHeaderLen;
             byte[] bStrData = new byte[iStrLen];
             System.arraycopy(buffer.array(), iPos, bStrData, 0, iStrLen);
             // 버퍼에 수신된 데이터 추가
@@ -199,7 +206,57 @@ System.out.println(trCode);
         // 7777포트를 Listen한다.
         Executors.newSingleThreadExecutor().execute(new Server("localhost", 7777));
     }
-	
+
+	public static byte[] toByteArray(Object obj) {
+        byte[] bytes = null;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try {
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+			oos.writeObject(obj);
+			oos.flush();
+			oos.close();
+			bos.close();
+			bytes = bos.toByteArray();
+		} catch (IOException e) {
+            e.printStackTrace();
+		}
+		return bytes;
+	}
+
+	public static Object toObject(byte[] bytes)
+	{
+        Object obj = null;
+		try {
+            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+			ObjectInputStream ois = new ObjectInputStream(bis);
+			obj = ois.readObject();
+
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} catch (ClassNotFoundException ex) {
+			ex.printStackTrace();
+		}
+		return obj;
+	}
+	/*
+    private int byte2Int(byte[] bt) {
+        int s1 = bt[0] & 0xFF;
+        int s2 = bt[1] & 0xFF;
+        int s3 = bt[2] & 0xFF;
+        int s4 = bt[3] & 0xFF;
+        return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
+    }
+
+	public void setStHeader(byte[] btData) {
+		this.HeaderSz = (4 * 11) + (1 * 4) + 12;
+       
+		byte[] t4Byte = new byte[4];
+		System.arraycopy(btData, 0, t4Byte, 0, 4);
+		this.DataLen = byte2Int(t4Byte);
+		System.arraycopy(btData, 4, t4Byte, 0, 4);
+		this.TrCode = byte2Int(t4Byte);
+	}
+
     public int byte2Int_test(byte[] bt) {
         int s1 = bt[0] & 0xFF;
         int s2 = bt[1] & 0xFF;
@@ -208,11 +265,12 @@ System.out.println(trCode);
 
         return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
     }
+	*/
     //출처: https://it77.tistory.com/47 [시원한물냉의 사람사는 이야기]
 }
 
 //Header
-class ST_Header {
+class ST_Header implements Serializable {
     public int HeaderSz;
     public int DataLen;
     public int TrCode;
@@ -234,21 +292,4 @@ class ST_Header {
     public int Next_KeyLen;
     public int Option_len;
 
-    private int byte2Int(byte[] bt) {
-        int s1 = bt[0] & 0xFF;
-        int s2 = bt[1] & 0xFF;
-        int s3 = bt[2] & 0xFF;
-        int s4 = bt[3] & 0xFF;
-        return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
-    }
-
-	public void setStHeader(byte[] btData) {
-		this.HeaderSz = (4 * 11) + (1 * 4) + 12;
-       
-		byte[] t4Byte = new byte[4];
-		System.arraycopy(btData, 0, t4Byte, 0, 4);
-		this.DataLen = byte2Int(t4Byte);
-		System.arraycopy(btData, 4, t4Byte, 0, 4);
-		this.TrCode = byte2Int(t4Byte);
-	}
 }
