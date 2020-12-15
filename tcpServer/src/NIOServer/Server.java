@@ -291,6 +291,8 @@ System.out.println(trCode);
     public byte[] makeByteArray(int iVal, int iPos, byte[] mByteHeader) {
        
 		byte[] mByteResult = new byte[mByteHeader.length];
+		mByteResult = mByteHeader;
+
         byte[] mByteTemp = new byte[4];
         mByteTemp = intToByteArray(iVal);
         System.arraycopy(mByteTemp, 0, mByteResult, iPos, 4);
@@ -388,17 +390,11 @@ class ST_Header implements Serializable {
     public int Client_Rtn2;
     public int Client_Rtn3;
     public byte[] User_ID;//[8]
-    //public String User_ID;
     public byte CompressFlg;
     public byte KillGbn;
     public byte Filler1;
     public byte Filler2;
-    //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
     public byte[] Msg_cd;//[4]
-    //  public String Msg_cd;
     public int Next_KeyLen;
     public int Option_len;
-  
-  
-  
 }
