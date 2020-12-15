@@ -205,66 +205,49 @@ System.out.println(trCode);
            //byte[] mByteHeader = toByteArray(mStHeader);
            //mStHeader.DataLen = stHeaderLen + data.length();
            byte[] mByteHeader = new byte[stHeaderLen];
-           byte[] mByteTemp = new byte[4];
-           
+   
            //DataLen
-           mByteTemp = intToByteArray(stHeaderLen - 4 + data.length());
-           System.arraycopy(mByteTemp, 0, mByteHeader, 0, 4);
+		   mByteHeader = makeByteArray( stHeaderLen - 4 + data.length(), 0, mByteHeader);
            //TrCode
-           mByteTemp = intToByteArray(2000);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 4, 4);
+		   mByteHeader = makeByteArray( 2000,  4, mByteHeader);
            //Dest_Way;
-           mByteTemp = intToByteArray(2001);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 8, 4);
+		   mByteHeader = makeByteArray( 2001,  8, mByteHeader);
            //Client_Handle;
-           mByteTemp = intToByteArray(2002);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 12, 4);
+		   mByteHeader = makeByteArray( 2002, 12, mByteHeader);
            //User_Field;
-           mByteTemp = intToByteArray(2003);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 16, 4);
+		   mByteHeader = makeByteArray( 2003, 16, mByteHeader);
            //Data_Type;
-           mByteTemp = intToByteArray(2004);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 20, 4);
+		   mByteHeader = makeByteArray( 2004, 20, mByteHeader);
            //Client_Rtn1;
-           mByteTemp = intToByteArray(2005);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 24, 4);
+		   mByteHeader = makeByteArray( 2005, 24, mByteHeader);
            //Client_Rtn2;
-           mByteTemp = intToByteArray(2006);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 28, 4);
+		   mByteHeader = makeByteArray( 2006, 28, mByteHeader);
            //Client_Rtn3;
-           mByteTemp = intToByteArray(2007);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 32, 4);
+		   mByteHeader = makeByteArray( 2007, 32, mByteHeader);
            //User_ID
            byte[] mByteUser = new byte[8];
            System.arraycopy(mByteUser, 0, mByteHeader, 36, 8);
            byte CompressFlg = 1;
-           //System.arraycopy(CompressFlg, 0, mByteHeader, 44, 1);
            mByteHeader[44] = CompressFlg;
            byte KillGbn = 0;
-           //System.arraycopy(KillGbn, 0, mByteHeader, 45, 1);
            mByteHeader[44] = KillGbn;
            byte Filler1 = 0;
-           //System.arraycopy(Filler1, 0, mByteHeader, 46, 1);
            mByteHeader[44] = Filler1;
            byte Filler2 = 0;
-           //System.arraycopy(Filler2, 0, mByteHeader, 47, 1);
            mByteHeader[44] = Filler2;
            byte[] mByteMsgCd = new byte[4];
            String MsgCd = "0000";
            mByteMsgCd = MsgCd.getBytes();
            System.arraycopy(mByteMsgCd, 0, mByteHeader, 48, 4);
             //Next_KeyLen
-           mByteTemp = intToByteArray(0);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 52, 4);
+		   mByteHeader = makeByteArray( 2008, 52, mByteHeader);
            //Option_len
-           mByteTemp = intToByteArray(0);
-           System.arraycopy(mByteTemp, 0, mByteHeader, 56, 4);
-           
+		   mByteHeader = makeByteArray( 2009, 56, mByteHeader);
+
+		   //Data부분 처리..
            byte[] mByteData = data.getBytes();
            byte[] mByteTotal = new byte[mByteHeader.length + mByteData.length];
-           //byte[] mByteTotLen = intToByteArray(stHeaderLen + data.length() + 4);
            
-           //System.arraycopy(mByteTotLen, 0, mByteTotal, 0, 4);
            System.arraycopy(mByteHeader, 0, mByteTotal, 0, mByteHeader.length);
            System.arraycopy(mByteData, 0, mByteTotal, mByteHeader.length, mByteData.length);
                       
@@ -289,21 +272,32 @@ System.out.println(trCode);
         Executors.newSingleThreadExecutor().execute(new Server("localhost", 7777));
     }
 
-        public static byte[] toByteArray(Object obj) {
+    public static byte[] toByteArray(Object obj) {
         byte[] bytes = null;
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                try {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
             ObjectOutputStream oos = new ObjectOutputStream(bos);
-                        oos.writeObject(obj);
-                        oos.flush();
-                        oos.close();
-                        bos.close();
-                        bytes = bos.toByteArray();
-                } catch (IOException e) {
+            oos.writeObject(obj);
+            oos.flush();
+            oos.close();
+            bos.close();
+            bytes = bos.toByteArray();
+        } catch (IOException e) {
             e.printStackTrace();
-                }
-                return bytes;
         }
+        return bytes;
+    }
+
+    public byte[] makeByteArray(int iVal, int iPos, byte[] mByteHeader) {
+       
+		byte[] mByteResult = new byte[mByteHeader.length];
+        byte[] mByteTemp = new byte[4];
+        mByteTemp = intToByteArray(iVal);
+        System.arraycopy(mByteTemp, 0, mByteResult, iPos, 4);
+		
+		return mByteResult;
+    }
+
 /*
     public static Object toObject(byte[] bytes) {
         Object obj = null;
@@ -345,19 +339,19 @@ System.out.println(trCode);
     }
     
     public  byte[] intToByteArray(int value) {
-		byte[] byteArray = new byte[4];
-		/*
-		byteArray[0] = (byte)(value >> 24);
-		byteArray[1] = (byte)(value >> 16);
-		byteArray[2] = (byte)(value >> 8);
-		byteArray[3] = (byte)(value);
-		*/
-		byteArray[3] = (byte)(value >> 24);
-		byteArray[2] = (byte)(value >> 16);
-		byteArray[1] = (byte)(value >> 8);
-		byteArray[0] = (byte)(value);
-		return byteArray;
-	}
+        byte[] byteArray = new byte[4];
+        /*
+        byteArray[0] = (byte)(value >> 24);
+        byteArray[1] = (byte)(value >> 16);
+        byteArray[2] = (byte)(value >> 8);
+        byteArray[3] = (byte)(value);
+        */
+        byteArray[3] = (byte)(value >> 24);
+        byteArray[2] = (byte)(value >> 16);
+        byteArray[1] = (byte)(value >> 8);
+        byteArray[0] = (byte)(value);
+        return byteArray;
+    }
     
     /*
     public void setStHeader(byte[] btData) {
@@ -370,16 +364,16 @@ System.out.println(trCode);
             this.TrCode = byte2Int(t4Byte);
     }
 
-public int byte2Int_test(byte[] bt) {
-    int s1 = bt[0] & 0xFF;
-    int s2 = bt[1] & 0xFF;
-    int s3 = bt[2] & 0xFF;
-    int s4 = bt[3] & 0xFF;
+    public int byte2Int_test(byte[] bt) {
+        int s1 = bt[0] & 0xFF;
+        int s2 = bt[1] & 0xFF;
+        int s3 = bt[2] & 0xFF;
+        int s4 = bt[3] & 0xFF;
 
-    return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
-}
+        return ((s4 << 24) + (s3 << 16) + (s2 << 8) + (s1 << 0));
+    }
     */
-//출처: https://it77.tistory.com/47 [시원한물냉의 사람사는 이야기]
+    //출처: https://it77.tistory.com/47 [시원한물냉의 사람사는 이야기]
 }
 
 //Header
