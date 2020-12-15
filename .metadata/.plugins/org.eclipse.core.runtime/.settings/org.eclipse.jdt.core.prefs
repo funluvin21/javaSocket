@@ -7,3 +7,4 @@ org.eclipse.jdt.core.compiler.problem.assertIdentifier=error
 org.eclipse.jdt.core.compiler.problem.enumIdentifier=error
 org.eclipse.jdt.core.compiler.release=enabled
 org.eclipse.jdt.core.compiler.source=11
+org.eclipse.jdt.core.userLibrary.JDBC=<?xml version\="1.0" encoding\="UTF-8"?>\n<userlibrary systemlibrary\="false" version\="2">\n\t<archive path\="/usr/share/java/mysql-connector-java-8.0.22.jar"/>\n</userlibrary>\n

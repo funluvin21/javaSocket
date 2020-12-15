@@ -49,12 +49,13 @@ public class Server implements Runnable {
                     // 키가 있으면..
                     while (keys.hasNext()) {
                         SelectionKey key = keys.next();
-                        //키 셋에서 제거.
+                           //키 셋에서 제거.
                         keys.remove();
                         if (!key.isValid()) {
                             continue;
-                        }
-                        // 접속일 경우..
+                            }
+
+                           // 접속일 경우..
                         if (key.isAcceptable()) {
                             this.accept(selector, key);
                             // 수신일 경우..
@@ -63,13 +64,13 @@ public class Server implements Runnable {
                             // 발신일 경우..
                         } else if (key.isWritable()) {
                             this.send(selector, key);
-                        }
+                            }
                     }
-                }
-            }
-        } catch (IOException e) {
+                 }
+              }
+         } catch (IOException e) {
             e.printStackTrace();
-        }
+           }
     }
 	
     // 접속시 호출 함수..
@@ -170,7 +171,7 @@ public class Server implements Runnable {
 				channel.register(selector, SelectionKey.OP_WRITE, sb);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
