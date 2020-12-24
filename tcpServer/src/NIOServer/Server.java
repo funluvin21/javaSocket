@@ -164,6 +164,13 @@ public class Server implements Runnable {
 					key.cancel();
 					return;
 				}
+				
+				switch (st_header.TrCode) {
+				    case 2000 : break;
+				    default: break;
+				}
+				
+				
 				// Echo - 메시지> 의 형태로 재 전송.
 				sb.insert(0, "Echo - ");
 				sb.append("\r\n>");
@@ -191,75 +198,75 @@ System.out.println(trCode);
     // 발신시 호출 함수
     private void send(Selector selector, SelectionKey key) {
         try {
-             // 키 채널을 가져온다.
-           SocketChannel channel = (SocketChannel) key.channel();
-             // 채널 Non-blocking 설정
-           channel.configureBlocking(false);
-           // StringBuffer 취득
-           StringBuffer sb = (StringBuffer) key.attachment();
-           String data = sb.toString();
-           // StringBuffer 초기화
-           sb.setLength(0);
-          
-           //ST_Header mStHeader = new ST_Header();
-           //byte[] mByteHeader = toByteArray(mStHeader);
-           //mStHeader.DataLen = stHeaderLen + data.length();
-           byte[] mByteHeader = new byte[stHeaderLen];
-   
-           //DataLen
-		   mByteHeader = makeByteArray( stHeaderLen - 4 + data.length(), 0, mByteHeader);
-           //TrCode
-		   mByteHeader = makeByteArray( 2000,  4, mByteHeader);
-           //Dest_Way;
-		   mByteHeader = makeByteArray( 2001,  8, mByteHeader);
-           //Client_Handle;
-		   mByteHeader = makeByteArray( 2002, 12, mByteHeader);
-           //User_Field;
-		   mByteHeader = makeByteArray( 2003, 16, mByteHeader);
-           //Data_Type;
-		   mByteHeader = makeByteArray( 2004, 20, mByteHeader);
-           //Client_Rtn1;
-		   mByteHeader = makeByteArray( 2005, 24, mByteHeader);
-           //Client_Rtn2;
-		   mByteHeader = makeByteArray( 2006, 28, mByteHeader);
-           //Client_Rtn3;
-		   mByteHeader = makeByteArray( 2007, 32, mByteHeader);
-           //User_ID
-           byte[] mByteUser = new byte[8];
-           System.arraycopy(mByteUser, 0, mByteHeader, 36, 8);
-           byte CompressFlg = 1;
-           mByteHeader[44] = CompressFlg;
-           byte KillGbn = 0;
-           mByteHeader[44] = KillGbn;
-           byte Filler1 = 0;
-           mByteHeader[44] = Filler1;
-           byte Filler2 = 0;
-           mByteHeader[44] = Filler2;
-           byte[] mByteMsgCd = new byte[4];
-           String MsgCd = "0000";
-           mByteMsgCd = MsgCd.getBytes();
-           System.arraycopy(mByteMsgCd, 0, mByteHeader, 48, 4);
-            //Next_KeyLen
-		   mByteHeader = makeByteArray( 2008, 52, mByteHeader);
-           //Option_len
-		   mByteHeader = makeByteArray( 2009, 56, mByteHeader);
+            // 키 채널을 가져온다.
+            SocketChannel channel = (SocketChannel) key.channel();
+            // 채널 Non-blocking 설정
+            channel.configureBlocking(false);
+            // StringBuffer 취득
+            StringBuffer sb = (StringBuffer) key.attachment();
+            String data = sb.toString();
+            // StringBuffer 초기화
+            sb.setLength(0);
 
-		   //Data부분 처리..
-           byte[] mByteData = data.getBytes();
-           byte[] mByteTotal = new byte[mByteHeader.length + mByteData.length];
+            //ST_Header mStHeader = new ST_Header();
+            //byte[] mByteHeader = toByteArray(mStHeader);
+            //mStHeader.DataLen = stHeaderLen + data.length();
+            byte[] mByteHeader = new byte[stHeaderLen];
+
+            //DataLen
+            mByteHeader = makeByteArray( stHeaderLen - 4 + data.length(), 0, mByteHeader);
+            //TrCode
+            mByteHeader = makeByteArray( 2000,  4, mByteHeader);
+            //Dest_Way;
+            mByteHeader = makeByteArray( 2001,  8, mByteHeader);
+            //Client_Handle;
+            mByteHeader = makeByteArray( 2002, 12, mByteHeader);
+            //User_Field;
+            mByteHeader = makeByteArray( 2003, 16, mByteHeader);
+            //Data_Type;
+            mByteHeader = makeByteArray( 2004, 20, mByteHeader);
+            //Client_Rtn1;
+            mByteHeader = makeByteArray( 2005, 24, mByteHeader);
+            //Client_Rtn2;
+            mByteHeader = makeByteArray( 2006, 28, mByteHeader);
+            //Client_Rtn3;
+            mByteHeader = makeByteArray( 2007, 32, mByteHeader);
+            //User_ID
+            byte[] mByteUser = new byte[8];
+            System.arraycopy(mByteUser, 0, mByteHeader, 36, 8);
+            byte CompressFlg = 1;
+            mByteHeader[44] = CompressFlg;
+            byte KillGbn = 0;
+            mByteHeader[44] = KillGbn;
+            byte Filler1 = 0;
+            mByteHeader[44] = Filler1;
+            byte Filler2 = 0;
+            mByteHeader[44] = Filler2;
+            byte[] mByteMsgCd = new byte[4];
+            String MsgCd = "0000";
+            mByteMsgCd = MsgCd.getBytes();
+            System.arraycopy(mByteMsgCd, 0, mByteHeader, 48, 4);
+            //Next_KeyLen
+            mByteHeader = makeByteArray( 2008, 52, mByteHeader);
+            //Option_len
+            mByteHeader = makeByteArray( 2009, 56, mByteHeader);
+
+            //Data부분 처리..
+            byte[] mByteData = data.getBytes();
+            byte[] mByteTotal = new byte[mByteHeader.length + mByteData.length];
            
-           System.arraycopy(mByteHeader, 0, mByteTotal, 0, mByteHeader.length);
-           System.arraycopy(mByteData, 0, mByteTotal, mByteHeader.length, mByteData.length);
+            System.arraycopy(mByteHeader, 0, mByteTotal, 0, mByteHeader.length);
+            System.arraycopy(mByteData, 0, mByteTotal, mByteHeader.length, mByteData.length);
                       
            
-           //byte 형식으로 변환
-           //ByteBuffer buffer = ByteBuffer.wrap(data.getBytes());
-           ByteBuffer buffer = ByteBuffer.wrap(mByteTotal);
+            //byte 형식으로 변환
+            //ByteBuffer buffer = ByteBuffer.wrap(data.getBytes());
+            ByteBuffer buffer = ByteBuffer.wrap(mByteTotal);
 
             // ***데이터 송신***
-           channel.write(buffer);
-           // Socket 채널을 channel에 수신 등록한다
-           channel.register(selector, SelectionKey.OP_READ, sb);
+            channel.write(buffer);
+            // Socket 채널을 channel에 수신 등록한다
+            channel.register(selector, SelectionKey.OP_READ, sb);
         } catch (IOException e) {
             e.printStackTrace();
         }
