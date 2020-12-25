@@ -135,6 +135,9 @@ public class Server implements Runnable {
             byte[] t4Byte = new byte[4];
             System.arraycopy(data, 0, t4Byte, 0, 4);
             st_header.DataLen = byteArrayToInt(t4Byte);
+            
+            System.arraycopy(data, 4, t4Byte, 0, 4);
+            st_header.TrCode = byteArrayToInt(t4Byte);
 
             // StringBuffer 취득
             StringBuffer sb = (StringBuffer) key.attachment();
@@ -164,15 +167,11 @@ public class Server implements Runnable {
 					key.cancel();
 					return;
 				}
-				
-				switch (st_header.TrCode) {
-				    case 2000 : break;
-				    default: break;
-				}
-				
-				
+			
 				// Echo - 메시지> 의 형태로 재 전송.
 				sb.insert(0, "Echo - ");
+				String strRtn = stringRtnMessage(st_header.TrCode);
+				sb.append(strRtn);
 				sb.append("\r\n>");
 				// Socket 채널을 channel에 송신 등록한다
 				channel.register(selector, SelectionKey.OP_WRITE, sb);
@@ -182,6 +181,17 @@ public class Server implements Runnable {
         }
     }
 
+    public String stringRtnMessage(int rTrCode)
+    {
+    	String strRtn = "";
+		switch (rTrCode) {
+	       case 2000 :
+	    	   strRtn = "20000001";
+	    	   break;
+	       default: break;
+		}
+    	return strRtn;
+    }
 /************
 byte[] d_DataLen = new byte[4];
 System.arraycopy(buffer.array(), 0, d_DataLen, 0, 4);
@@ -192,7 +202,6 @@ byte[] d_TrCode = new byte[4];
 System.arraycopy(buffer.array(), 4, d_TrCode, 0, 4);
 int trCode = byte2Int(d_TrCode);
 System.out.println(trCode);
-
 *********************/
 
     // 발신시 호출 함수
@@ -247,7 +256,7 @@ System.out.println(trCode);
             mByteMsgCd = MsgCd.getBytes();
             System.arraycopy(mByteMsgCd, 0, mByteHeader, 48, 4);
             //Next_KeyLen
-            mByteHeader = makeByteArray( 2008, 52, mByteHeader);
+            mByteHeader = makeByteArray( 0, 52, mByteHeader);
             //Option_len
             mByteHeader = makeByteArray( 2009, 56, mByteHeader);
 
